@@ -144,6 +144,7 @@ export default function Home() {
     setHighlightedPage(null);
     setAlert("");
     setNoOfPageFaults(0);
+    setInputHexAddress("");
   };
   //Handling the physical page indexes
   const submitPhysicalBits = () => {
