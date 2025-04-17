@@ -118,7 +118,7 @@ const Result = ({ result, conversionMode, indexBits }: ResultProps) => {
           <TableCell
             className={`text-right ${
               result.status === "page_fault"
-                ? "text-red-500 font-bold"
+                ? "text-yellow-600 font-bold"
                 : result.status === "unmapped"
                 ? "text-amber-500"
                 : result.status === "success"

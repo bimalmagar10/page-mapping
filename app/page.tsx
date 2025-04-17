@@ -549,6 +549,7 @@ export default function Home() {
                   <input
                     type="text"
                     value={inputHexAddress}
+                    maxLength={4}
                     onChange={(e) => setInputHexAddress(e.target.value)}
                     placeholder="Enter hex number"
                     className="border p-2 rounded flex-1"

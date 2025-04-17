@@ -45,7 +45,7 @@ const QueueManager = ({
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium mb-2">
-          Set Initial FIFO Queue Order
+          Set Initial Arrival Order Of Pages (FIFO)
         </h3>
         <p className="text-sm text-gray-500 mb-4">
           Specify the order in which pages arrived in memory. The oldest page
@@ -132,12 +132,12 @@ const QueueManager = ({
       </div>
       <div className="bg-amber-50 p-4 rounded-md">
         <h3 className="text-md font-medium mb-2">
-          How FIFO Page Replacement Works
+          How FIFO Page Replacement Works?
         </h3>
         <p className="text-sm">
           When a page fault occurs, the system will replace the oldest page in
-          memory (the first one that was loaded). The order you set here
-          determines which page will be replaced first.
+          memory (the first one that arrived). The order you set here determines
+          which page will be replaced first.
         </p>
       </div>
     </div>
