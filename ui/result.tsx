@@ -17,6 +17,7 @@ interface ResultProps {
     replacedPage?: string | null;
     newPage?: string;
     physicalFrame?: number;
+    inputHex?: string;
   };
   conversionMode: string;
   indexBits: number;
@@ -67,6 +68,10 @@ const Result = ({ result, conversionMode, indexBits }: ResultProps) => {
       </TableHeader>
       <TableBody>
         <TableRow>
+          <TableCell>Input address in hexadecimal</TableCell>
+          <TableCell className="text-right">&#x23;{result?.inputHex}</TableCell>
+        </TableRow>
+        <TableRow>
           <TableCell>Address To Be Mapped in Binary</TableCell>
           <TableCell className="text-right">
             {conversionMode === "v2p"
@@ -104,7 +109,7 @@ const Result = ({ result, conversionMode, indexBits }: ResultProps) => {
                 {result.message}
               </span>
             ) : (
-              result.outputHex
+              <>&#x23;{result.outputHex}</>
             )}
           </TableCell>
         </TableRow>
@@ -113,9 +118,11 @@ const Result = ({ result, conversionMode, indexBits }: ResultProps) => {
           <TableCell
             className={`text-right ${
               result.status === "page_fault"
-                ? "text-amber-500 font-bold"
+                ? "text-red-500 font-bold"
                 : result.status === "unmapped"
                 ? "text-amber-500"
+                : result.status === "success"
+                ? "text-green-600 "
                 : ""
             }`}
           >
@@ -132,21 +139,6 @@ const Result = ({ result, conversionMode, indexBits }: ResultProps) => {
                   <span className="font-mono">{result.replacedPage}</span> with
                   page <span className="font-mono">{result.newPage}</span> in
                   frame {result.physicalFrame}
-                </p>
-              </div>
-            </TableCell>
-          </TableRow>
-        )}
-
-        {conversionMode === "p2v" && (
-          <TableRow>
-            <TableCell>Note on Physical to Virtual</TableCell>
-            <TableCell>
-              <div className="bg-blue-50 p-2 rounded text-sm">
-                <p>
-                  When converting from physical to virtual addresses, page fault
-                  handling with FIFO doesn't apply. A physical frame either has
-                  a virtual page mapped to it or it doesn't.
                 </p>
               </div>
             </TableCell>

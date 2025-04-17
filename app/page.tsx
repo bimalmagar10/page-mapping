@@ -28,6 +28,7 @@ import PageTable from "@/ui/page-table";
 import QueueManager from "@/ui/queue-manager";
 import Result from "@/ui/result";
 import { decToBits, formatBinary, hexToBits, PageMap } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function Home() {
   // Memory configuration states
@@ -56,17 +57,23 @@ export default function Home() {
   const createInitialConfiguration = () => {
     //Check if the inputs are valid
     if (virtualMemSize < pageSize) {
-      setAlert("Virtual memory size must be larger than the page size!");
+      let errTxt = "Virtual memory size must be larger than the page size!";
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
     if (virtualMemSize % 2 !== 0) {
-      setAlert("Virtual memory size must be multiple of 2!");
+      let errTxt = "Virtual memory size must be multiple of 2!";
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
     if (virtualMemSize % pageSize !== 0) {
-      setAlert("Page size must be multiple of the virtual size!");
+      let errTxt = "Page size must be multiple of the virtual size!";
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
@@ -105,7 +112,9 @@ export default function Home() {
     const maxPresentBitValue = Math.pow(2, indexBits - 1);
 
     if (maxPresentBitValue !== presentBitCount) {
-      setAlert(`Please select ${maxPresentBitValue} present bits to be 1.`);
+      let errTxt = `Please select only ${maxPresentBitValue} present bits to be 1.`;
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
@@ -150,11 +159,11 @@ export default function Home() {
     );
 
     if (hasDuplicates || hasInvalidValue) {
-      setAlert(
-        `Physical page indexes should be in between 0 and ${
-          maxPhysicalBitValue - 1
-        } with no duplicates.`
-      );
+      let errTxt = `Physical page indexes should be in between 0 and ${
+        maxPhysicalBitValue - 1
+      } with no duplicates.`;
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
@@ -172,7 +181,9 @@ export default function Home() {
   //Handling the arrival orders submission for the FIFO page replacement if page fault happens
   const submitArrivalOrders = () => {
     if (arrivalOrders.length === 0) {
-      setAlert("Please add at least one page to the queue.");
+      let errTxt = "Please add at least one page to the queue.";
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
@@ -184,7 +195,9 @@ export default function Home() {
   const addToQueue = (pageIdx: number) => {
     // Check if the page is already in the queue
     if (arrivalOrders.includes(pageIdx)) {
-      setAlert("This page is already in the arrival queue.");
+      let errTxt = "This page is already in the arrival queue.";
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
@@ -303,20 +316,17 @@ export default function Home() {
   };
 
   const physicalToVirtual = (input: string) => {
-    console.log(input);
-    if (input.length > totalBits - 1) {
-      input = input.slice(input.length - (totalBits - 1));
-    }
-
-    const indexBinary = input.substring(0, indexBits - 1);
+    const indexBinary =
+      indexBits - 1 === 0
+        ? input.substring(0, indexBits + 1)
+        : input.substring(0, indexBits - 1);
     const offsetBinary = input.substring(indexBits - 1);
-
     const physicalIndex = Number.parseInt(indexBinary, 2);
 
     const entry = pageEntries.find(
       (e) => e.physicalIndex === physicalIndex && e.present
     );
-
+    console.log(entry);
     if (entry) {
       const rowIndex = pageEntries.findIndex(
         (e) => e.virtualIndex === entry.virtualIndex
@@ -331,7 +341,8 @@ export default function Home() {
         outputBinary: formatBinary(virtualAddress),
         outputHex: Number.parseInt(virtualAddress, 2)
           .toString(16)
-          .padStart(Math.ceil(totalBits / 4), "0"),
+          .padStart(Math.ceil(totalBits / 4), "0")
+          .toUpperCase(),
         message: "Memory address conversion successful!",
       };
     } else {
@@ -341,7 +352,9 @@ export default function Home() {
           status: "error",
           outputBinary: "",
           outputHex: "",
-          message: `Invalid physical frame index: ${physicalIndex}. Maximum is ${maxPhysicalIndex}.`,
+          message: `Invalid physical page index: ${
+            physicalIndex - 1
+          }. Maximum is ${maxPhysicalIndex}.`,
         };
       }
       return {
@@ -379,7 +392,8 @@ export default function Home() {
         outputBinary: formatBinary(physicalAddress),
         outputHex: Number.parseInt(physicalAddress, 2)
           .toString(16)
-          .padStart(Math.ceil(totalBits / 4), "0"),
+          .padStart(Math.ceil(totalBits / 4), "0")
+          .toUpperCase(),
         message: "Memory address conversion successful!",
       };
     } else {
@@ -390,15 +404,44 @@ export default function Home() {
   // Handle Address Conversion
   const convertAddress = () => {
     if (!inputHexAddress) {
-      setAlert("Please enter a hex number in order to convert.");
+      let errTxt = `Please enter a hex number in order to convert.`;
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
     // Validate hex input
     const hexRegex = /^[0-9a-fA-F]+$/;
     if (!hexRegex.test(inputHexAddress)) {
-      setAlert("Please enter valid hex digits 0-9, a-f, or A-F.");
+      let errTxt = `Please enter valid hex digits 0-9, a-f, or A-F.`;
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
+    }
+
+    const convertingAddressInDecimal = Number.parseInt(inputHexAddress, 16);
+    if (conversionMode === "v2p") {
+      const maxVirAddr = Math.pow(2, totalBits) - 1;
+      if (convertingAddressInDecimal > maxVirAddr) {
+        let errTxt = `Invalid address:You entered address ${inputHexAddress} which exceeds maximum virtual address ${maxVirAddr
+          .toString(16)
+          .toUpperCase()}`;
+        setAlert(errTxt);
+        toast.error(errTxt);
+        setInputHexAddress("");
+        return;
+      }
+    } else if (conversionMode === "p2v") {
+      const maxPhyAddr = Math.pow(2, totalBits - 1) - 1;
+      if (convertingAddressInDecimal > maxPhyAddr) {
+        let errTxt = `Invalid address:You entered address ${inputHexAddress} which exceeds maximum physical address ${maxPhyAddr
+          .toString(16)
+          .toUpperCase()}`;
+        setAlert(errTxt);
+        toast.error(errTxt);
+        setInputHexAddress("");
+        return;
+      }
     }
 
     // Convert hex to binary
@@ -410,22 +453,41 @@ export default function Home() {
     // Check if input is too large
     const bitCount = binaryInput.length;
     if (4 <= bitCount - totalBits || bitCount - totalBits < 0) {
-      setAlert(
-        `Please use a hex number of ${Math.ceil(totalBits / 4)} hex digits.`
-      );
+      let errTxt = `Please use a hex number of ${Math.ceil(
+        totalBits / 4
+      )} digits.`;
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
     if (totalBits < 4) {
-      setAlert("Please use a larger hex number.");
+      let errTxt = `Please use a larger hex number.`;
+      setAlert(errTxt);
+      toast.error(errTxt);
       return;
     }
 
-    // Ensure binary input is the right length
-    if (binaryInput.length > totalBits) {
-      binaryInput = binaryInput.slice(binaryInput.length - totalBits);
-    } else if (binaryInput.length < totalBits) {
-      binaryInput = binaryInput.padStart(totalBits, "0");
+    if (conversionMode === "v2p") {
+      if (binaryInput.length > totalBits) {
+        binaryInput = binaryInput.slice(binaryInput.length - totalBits);
+      } else if (binaryInput.length < totalBits) {
+        binaryInput = binaryInput.padStart(totalBits, "0");
+      }
+    } else if (conversionMode === "p2v") {
+      const phyBits = totalBits - 1;
+      if (binaryInput.length > phyBits) {
+        const extra_bits = binaryInput.slice(0, binaryInput.length - phyBits);
+        if (extra_bits.includes("1")) {
+          let errTxt = `Your address ${inputHexAddress} exceeds maximum physical address`;
+          setAlert(errTxt);
+          toast.error(errTxt);
+          return;
+        }
+        binaryInput = binaryInput.slice(binaryInput.length - phyBits);
+      } else if (binaryInput.length < phyBits) {
+        binaryInput = binaryInput.padStart(phyBits, "0");
+      }
     }
 
     // Create formatted binary input for display
@@ -438,8 +500,9 @@ export default function Home() {
     } else {
       result = physicalToVirtual(binaryInput);
     }
-
+    console.log(inputHexAddress);
     setOutputResultAddress({
+      inputHex: inputHexAddress,
       inputBinary: formattedBinaryInput,
       ...result,
     });
@@ -457,14 +520,7 @@ export default function Home() {
           </CardTitle>
         </CardHeader>
       </Card>
-      <div>
-        {alert && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{alert}</AlertDescription>
-          </Alert>
-        )}
-      </div>
+      <div></div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Memory configuration part */}
         <Card>
@@ -622,7 +678,7 @@ export default function Home() {
                 {arrivalOrders.map((pgIdx, i) => (
                   <div
                     key={pgIdx}
-                    className="p-2 bg-gray-100 rounded flex items-center"
+                    className="p-2 bg-gray-100 rounded flex items-center border border-gray-300"
                   >
                     <span className="font-mono">
                       Page {decToBits(pgIdx, indexBits)}
