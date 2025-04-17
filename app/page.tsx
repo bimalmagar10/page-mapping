@@ -326,12 +326,11 @@ export default function Home() {
     const entry = pageEntries.find(
       (e) => e.physicalIndex === physicalIndex && e.present
     );
-    console.log(entry);
     if (entry) {
       const rowIndex = pageEntries.findIndex(
         (e) => e.virtualIndex === entry.virtualIndex
       );
-      setHighlightedPage(rowIndex);
+      setHighlightedPage(pageEntries.length - 1 - rowIndex);
 
       const virtualIndexBinary = decToBits(entry.virtualIndex, indexBits);
       const virtualAddress = virtualIndexBinary + offsetBinary;
@@ -620,6 +619,7 @@ export default function Home() {
                 conversionMode={conversionMode}
                 updatePresentBits={updatePresentBits}
                 updatePhysicalIndexes={updatePhysicalIndexes}
+                highlightedPage={highlightedPage}
               />
             </CardContent>
           </Card>
@@ -656,6 +656,16 @@ export default function Home() {
               <CardTitle>Conversion Result</CardTitle>
             </CardHeader>
             <CardContent>
+              {conversionMode === "p2v" && (
+                <Alert className="mb-4 bg-indigo-100">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-indigo-900">
+                    When converting from physical to virtual addresses, page
+                    fault handling with FIFO doesn't apply. A physical frame
+                    either has a virtual page mapped to it or it doesn't.
+                  </AlertDescription>
+                </Alert>
+              )}
               <Result
                 result={outputResultAddress}
                 conversionMode={conversionMode}
@@ -665,7 +675,7 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Conversion result starts here */}
+        {/* Conversion result ends here */}
 
         {/* FIFO page starts here */}
         {step === "convert" && arrivalOrders.length > 0 && (

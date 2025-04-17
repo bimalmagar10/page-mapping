@@ -18,6 +18,7 @@ interface PageTableProps {
   presentBits: number[];
   updatePresentBits: (index: number, value: number) => void;
   updatePhysicalIndexes: (index: number, value: number) => void;
+  highlightedPage: number | null;
 }
 
 const PageTable = ({
@@ -28,6 +29,7 @@ const PageTable = ({
   presentBits,
   updatePresentBits,
   updatePhysicalIndexes,
+  highlightedPage,
 }: PageTableProps) => {
   return (
     <div className="overflow-x-auto">
@@ -41,7 +43,12 @@ const PageTable = ({
         </TableHeader>
         <TableBody>
           {pageMappingEntries.map((entry, index) => (
-            <TableRow key={index} className={""}>
+            <TableRow
+              key={index}
+              className={
+                highlightedPage === entry.virtualIndex ? "bg-blue-50" : ""
+              }
+            >
               <TableCell>
                 <span
                   className={
